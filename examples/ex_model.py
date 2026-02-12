@@ -1,10 +1,11 @@
 import pandas as pd
+import numpy as np
 
 from darts.datasets import AirPassengersDataset, AustralianTourismDataset
-from darts.models import AutoARIMA, ExponentialSmoothing, XGBModel, VARIMA, Prophet, RandomForest
+from darts.models import AutoARIMA, ExponentialSmoothing, XGBModel, VARIMA, Prophet, RandomForestModel
 from darts.utils.utils import ModelMode, SeasonalityMode
 
-from pasts.signal import Signal
+from pasts.signals import Signal
 from pasts.visualization import Visualization
 
 
@@ -33,6 +34,7 @@ if __name__ == '__main__':
     # ---- Machine Learning ----
     # --- Split data between train and test ---
     timestamp = '1958-12-01'
+    # timestamp=dt.index.max()-pd.DateOffset(weeks=52)
     signal.validation_split(timestamp=timestamp)
 
     # --- Remove trend and seasonality ---
@@ -42,10 +44,10 @@ if __name__ == '__main__':
     # --- Apply models ---
     # save_model=True indicates that the fitted estimator and its predictions will be saved
     # in a joblib file in signal.path
-    signal.apply_model(ExponentialSmoothing(), save_model=True)
+    signal.apply_model(ExponentialSmoothing(trend=ModelMode.ADDITIVE, seasonal=SeasonalityMode.ADDITIVE), save_model=True)
     signal.apply_model(AutoARIMA(), save_model=True)
     signal.apply_model(Prophet(), save_model=True)
-    signal.apply_model(RandomForest(lags=24), save_model=True)
+    signal.apply_model(RandomForestModel(lags=12), save_model=True)
 
     # If trend and seasonality have been removed, you cannot perform this gridsearch !
     param_grid = {'trend': [ModelMode.ADDITIVE, ModelMode.MULTIPLICATIVE, ModelMode.NONE],
@@ -56,12 +58,16 @@ if __name__ == '__main__':
     # --- Compute scores ---
     signal.compute_scores()  # unit-wise by default
     signal.compute_scores(axis=0)  # time-wise
+    for model_name in signal.models.keys():
+        if 'scores' in signal.models[model_name] and 'unit_wise' in signal.models[model_name]['scores']:
+            print(f"--- {model_name} ---")
+            print(signal.models[model_name]['scores']['unit_wise'])
 
     # ---  Visualize predictions ---
     Visualization(signal).show_predictions()
 
     # --- Aggregated Model ---
-    signal.apply_aggregated_model([ExponentialSmoothing(), Prophet(), RandomForest(lags=24)], save_model=True)
+    signal.apply_aggregated_model([ExponentialSmoothing(), Prophet(), RandomForestModel(lags=24)], save_model=True)
     signal.compute_scores(axis=1)
 
     # --- Confidence intervals ---
@@ -79,7 +85,7 @@ if __name__ == '__main__':
     signal.forecast("AutoARIMA", 100, save_model=True)
     signal.forecast("ExponentialSmoothing", 100, save_model=True)
     signal.forecast("Prophet", 100, save_model=True)
-    signal.forecast("RandomForest", 100, save_model=True)
+    signal.forecast("RandomForestModel", 100, save_model=True)
 
     # --- Confidence intervals ---
     signal.compute_conf_intervals(window_size=3)
