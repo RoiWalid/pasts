@@ -95,6 +95,13 @@ class Model(ModelAbstract):
         darts.models to see available models.
         """
         train_tseries = TimeSeries.from_dataframe(self.signal.rest_train_data)
+        if gridsearch and parameters:
+            if (train_tseries.values() <= 0).any():
+                print("Negative values detected, performing the gridsearch without MULTIPLICATIVE")
+                parameters = parameters.copy()
+                for key in ['trend', 'seasonal']:
+                    if key in parameters:
+                        parameters[key] = [p for p in parameters[key] if "multiplicative" not in str(p).lower()]
         if gridsearch:
             if parameters is None:
                 raise Exception("Please enter the parameters")
