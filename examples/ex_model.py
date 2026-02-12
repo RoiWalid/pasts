@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # --- Apply models ---
     # save_model=True indicates that the fitted estimator and its predictions will be saved
     # in a joblib file in signal.path
-    signal.apply_model(ExponentialSmoothing(trend=ModelMode.ADDITIVE, seasonal=SeasonalityMode.ADDITIVE), save_model=True)
+    signal.apply_model(ExponentialSmoothing(), save_model=True)
     signal.apply_model(AutoARIMA(), save_model=True)
     signal.apply_model(Prophet(), save_model=True)
     signal.apply_model(RandomForestModel(lags=12), save_model=True)
