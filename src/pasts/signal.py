@@ -378,7 +378,7 @@ class Signal(ABC):
                 if self.operation_data is not None:
                     if self.operation_data.dict_op:
                         self.models[model]['forecast'] = TimeSeries.from_dataframe(
-                            self.operation_data.transform(self.models[model]['forecast'].pd_dataframe()))
+                            self.operation_data.transform(self.models[model]['forecast'].to_dataframe()))
                 if save_model:
                     joblib.dump(self.models[model], os.path.join(self.path, f'{model}_final_jlib'))
 
@@ -400,7 +400,7 @@ class Signal(ABC):
             if self.operation_data is not None:
                 if self.operation_data.dict_op:
                     self.models[model_name]['forecast'] = TimeSeries.from_dataframe(
-                        self.operation_data.transform(self.models[model_name]['forecast'].pd_dataframe()))
+                        self.operation_data.transform(self.models[model_name]['forecast'].to_dataframe()))
             if save_model:
                 joblib.dump(self.models[model_name], os.path.join(self.path, f'{model_name}_final_jlib'))
                 joblib.dump(self.rest_data, os.path.join(self.path, 'rest_data_jlib'))
