@@ -168,7 +168,7 @@ class Visualization:
 
             pred = model_data['predictions']
             time_index = pred.time_index
-            pred = pred.pd_dataframe()
+            pred = pred.to_dataframe()
 
             # Plot predictions
             for i, unit in enumerate(pred.columns):
