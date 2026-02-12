@@ -283,7 +283,7 @@ class Seasonality:
         Computed dataframe.
         """
         if i > 0:
-            output = self.estimator_future_season.predict(i).pd_dataframe()
+            output = self.estimator_future_season.predict(i).to_dataframe()
         else:
             output = self.seasonal_component.iloc[i:]
         return - output
@@ -303,7 +303,7 @@ class Seasonality:
         Computed dataframe.
         """
         if i > 0:
-            output = self.estimator_future_season.predict(i).pd_dataframe()
+            output = self.estimator_future_season.predict(i).to_dataframe()
         else:
             output = self.seasonal_component.iloc[i:]
         return output
