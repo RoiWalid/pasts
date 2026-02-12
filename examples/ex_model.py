@@ -5,7 +5,7 @@ from darts.datasets import AirPassengersDataset, AustralianTourismDataset
 from darts.models import AutoARIMA, ExponentialSmoothing, XGBModel, VARIMA, Prophet, RandomForestModel
 from darts.utils.utils import ModelMode, SeasonalityMode
 
-from pasts.signals import Signal
+from pasts.signal import Signal
 from pasts.visualization import Visualization
 
 
