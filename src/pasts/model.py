@@ -111,7 +111,7 @@ class Model(ModelAbstract):
         forecast = model.predict(len(self.signal.test_data))
         if self.signal.operation_train is not None:
             if self.signal.operation_train.dict_op:
-                forecast = TimeSeries.from_dataframe(self.signal.operation_train.transform(forecast.pd_dataframe()))
+                forecast = TimeSeries.from_dataframe(self.signal.operation_train.transform(forecast.to_dataframe()))
 
         return {'predictions': forecast, 'best_parameters': best_parameters, 'scores': {'unit_wise': {},
                                                                                         'time_wise': {}},
@@ -172,7 +172,7 @@ class AggregatedModel(ModelAbstract):
         'scores' : will be filled when scores are computed}
         """
         dict_pred = {model: self.signal.models[model][
-            'predictions'].pd_dataframe().copy() for model in model.keys()}
+            'predictions'].to_dataframe().copy() for model in model.keys()}
         df_test = self.signal.test_data.copy()
         weights = pd.DataFrame(index=MultiIndex.from_product([self.signal.test_data.index,
                                                              self.signal.test_data.columns], names=['Date', 'Unité']),
@@ -184,8 +184,8 @@ class AggregatedModel(ModelAbstract):
                 df_pred_temp = df_pred[df_pred.index < date]
                 df_test_temp = df_test[df_test.index < date]
                 for ref in weights.index.get_level_values(1).unique():
-                    weights.loc[(date, ref)][model_] = 1 / mean_squared_error(df_test_temp[ref], df_pred_temp[ref],
-                                                                              squared=False)
+                    mse_val = mean_squared_error(df_test_temp[ref], df_pred_temp[ref])
+                    weights.loc[(date, ref)][model_] = 1 / np.sqrt(mse_val)
 
         for i in weights.index:
             weights.loc[i] = weights.loc[i] / (weights.loc[i].sum())
@@ -197,7 +197,7 @@ class AggregatedModel(ModelAbstract):
         for ref in df_ag.columns:
             res = [0 for _ in df_ag.index]
             for model_ in model.keys():
-                pred = self.signal.models[model_]['predictions'].pd_dataframe()[ref].values
+                pred = self.signal.models[model_]['predictions'].to_dataframe()[ref].values
                 res += pred * weights.loc[ref, model_]
             df_ag[ref] = res
 
@@ -226,7 +226,7 @@ class AggregatedModel(ModelAbstract):
             # itv_inf = [0 for _ in df_ag.index]
             # itv_sup = [0 for _ in df_ag.index]
             for model_ in dict_models.keys():
-                pred = self.signal.models[model_]['forecast'].pd_dataframe()[ref].values
+                pred = self.signal.models[model_]['forecast'].to_dataframe()[ref].values
                 res += pred * self.signal.models['AggregatedModel']['weights'].loc[ref, model_]
                 # itv_inf = [itv_inf[i] + self.signal.models['AggregatedModel']['weights'].loc[ref, model_] * (
                 #             pred[i] + (-1.96) * std[model_] * np.sqrt(i)) for i in range(len(itv_inf))]
